@@ -12,7 +12,7 @@ app.use(express.json());
 
 // Firebase admin
 
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
