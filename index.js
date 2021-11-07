@@ -65,6 +65,20 @@ async function run() {
       );
       res.json(result);
     });
+
+    // PUT Admin role
+    app.put("/users/admin", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const filter = { email: user.email };
+      const updateDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.json(result);
+    });
   } finally {
     // client.close()
   }
