@@ -3,6 +3,7 @@ const cors = require("cors");
 const admin = require("firebase-admin");
 const { MongoClient } = require("mongodb");
 const ObjectId = require("mongodb").ObjectId;
+const stripe = require("stripe")(process.env.STRIPE_SECRET);
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -126,6 +127,21 @@ async function run() {
         isAdmin = true;
       }
       res.json({ admin: isAdmin });
+    });
+
+    // Stripe
+    app.post("/create-payment-intent", async (req, res) => {
+      const paymentInfo = req.body;
+      const amount = paymentInfo.price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        currency: "usd",
+        amount: amount,
+        paymentMethodTypes: [card],
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+      });
     });
   } finally {
     // client.close()
