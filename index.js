@@ -56,6 +56,14 @@ async function run() {
       res.json(result);
     });
 
+    // Get appointment by id
+    app.get("/appointments/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await appointmentCollection.findOne(query);
+      res.json(result);
+    });
+
     // Post appointments
     app.post("/appointments", verifyToken, async (req, res) => {
       const appointment = req.body;
