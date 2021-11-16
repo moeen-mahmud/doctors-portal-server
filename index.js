@@ -4,6 +4,7 @@ const admin = require("firebase-admin");
 const { MongoClient } = require("mongodb");
 const ObjectId = require("mongodb").ObjectId;
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
+const fileUpload = require("express-fileupload");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -11,6 +12,7 @@ const port = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(fileUpload());
 
 // Firebase admin
 
@@ -46,6 +48,7 @@ async function run() {
 
     const database = client.db("doctors_portal");
     const appointmentCollection = database.collection("appointments");
+    const doctorsCollection = database.collection("doctors");
     const usersCollection = database.collection("users");
 
     // Get appointments by email
@@ -70,6 +73,30 @@ async function run() {
     app.post("/appointments", verifyToken, async (req, res) => {
       const appointment = req.body;
       const result = await appointmentCollection.insertOne(appointment);
+      res.json(result);
+    });
+
+    // Find All Doctors
+    app.get("/doctors", async (req, res) => {
+      const cursor = doctorsCollection.find({});
+      const result = await cursor.toArray();
+      res.json(result);
+    });
+
+    // POST or Add a doctor
+    app.post("/doctors", async (req, res) => {
+      const name = req.body.name;
+      const email = req.body.email;
+      const pic = req.files.image;
+      const picData = pic.data;
+      const encodedPic = picData.toString("base64");
+      const imageBuffer = Buffer.from(encodedPic, "base64");
+      const doctor = {
+        name,
+        email,
+        image: imageBuffer,
+      };
+      const result = await doctorsCollection.insertOne(doctor);
       res.json(result);
     });
 
